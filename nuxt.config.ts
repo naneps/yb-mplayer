@@ -16,12 +16,10 @@ export default defineNuxtConfig({
     storesDirs: ["./stores/**", "./custom-folder/stores/**"],
   },
   runtimeConfig: {
-    externalApiBase: process.env.EXTERNAL_API_BASE,
-    externalLoginPath: process.env.EXTERNAL_LOGIN_PATH || "/mobile/auth/login",
-    externalMePath: process.env.EXTERNAL_ME_PATH || "",
-    authCookieName: process.env.AUTH_COOKIE_NAME || "auth_token",
-    public: {},
+    public: {
+      embyBaseUrl: process.env.NUXT_PUBLIC_EMBY_BASE_URL,
+      embyApiKey: process.env.NUXT_PUBLIC_EMBY_API_KEY,
+    },
   },
   css: ["assets/css/main.css"],
- 
 });

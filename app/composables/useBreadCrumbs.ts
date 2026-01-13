@@ -1,10 +1,13 @@
 import type {
-    RouteLocationMatched,
-    RouteLocationNormalizedLoaded,
+  RouteLocationMatched,
+  RouteLocationNormalizedLoaded,
 } from "vue-router";
-import { ROUTE_ICON_MAP } from "~/constants/routeIcons";
+import { useEmbyStore } from "~/stores/emby/emby.store";
 
-export type Crumb = {label: string; to?: string; icon?: string};
+export type Crumb = {
+  label: string;
+  to?: string;
+};
 
 function humanize(input = "") {
   return input
@@ -18,22 +21,35 @@ function humanize(input = "") {
 
 function labelFromRecord(
   rec: RouteLocationMatched,
-  cur: RouteLocationNormalizedLoaded,
+  cur: RouteLocationNormalizedLoaded
 ) {
   const meta: any = rec.meta || {};
   const bc = meta.breadcrumb ?? meta.title;
+
   if (typeof bc === "function") return bc(cur);
   if (typeof bc === "string") return bc;
-  const seg = rec.path.split("/").filter(Boolean).pop() || "";
-  return humanize(seg);
-}
 
-function lookupIcon(pathOrName: string) {
-  // cari icon default dari ROUTE_ICON_MAP
-  const keys = Object.keys(ROUTE_ICON_MAP).sort((a, b) => b.length - a.length);
-  for (const key of keys)
-    if (pathOrName.startsWith(key)) return ROUTE_ICON_MAP[key];
-  return undefined;
+  const seg = rec.path.split("/").filter(Boolean).pop() || "";
+
+  // dynamic param (:id, dll)
+  if (seg.startsWith(":")) {
+    const paramName = seg.replace(":", "").replace("()", "");
+    const paramVal = cur.params[paramName];
+
+    // khusus emby library
+    if (paramName === "id") {
+      const embyStore = useEmbyStore();
+      const lib = embyStore.libraries.find(
+        (l) => String(l.Id) === String(paramVal)
+      );
+      if (lib) return lib.Name;
+    }
+
+    if (typeof paramVal === "string") return paramVal;
+    if (Array.isArray(paramVal)) return paramVal[0];
+  }
+
+  return humanize(seg);
 }
 
 export function useBreadcrumbs(opts?: {
@@ -49,76 +65,70 @@ export function useBreadcrumbs(opts?: {
   const items = computed<Crumb[]>(() => {
     const out: Crumb[] = [];
 
-    // ROOT crumb (Home)
+    // ROOT
     if (!opts?.hideRoot) {
       out.push({
         label: opts?.rootLabel ?? "Home",
         to: opts?.rootTo ?? "/",
-        icon: "i-lucide-house",
       });
     }
 
-    // records yang match selain root
     const matched = route.matched
       .filter((r) => r.path !== "/")
-      .filter((r) => !opts?.excludeNames?.includes(String(r.name ?? "")));
+      .filter(
+        (r) => !opts?.excludeNames?.includes(String(r.name ?? ""))
+      );
 
-    // ===== auto section crumb: '/master-data' dari path saat ini
+    // auto section (/library)
     const segs = route.path.split("/").filter(Boolean);
     const sectionPath = segs.length ? `/${segs[0]}` : "/";
-    const hasSectionInMatched = matched.some((r) => r.path === sectionPath);
+    const hasSection = matched.some((r) => r.path === sectionPath);
 
-    if (sectionPath !== "/" && !hasSectionInMatched) {
+    if (sectionPath !== "/" && !hasSection) {
       out.push({
         label: humanize(segs[0]),
         to: sectionPath,
-        icon: lookupIcon(sectionPath),
       });
     }
-    // ===== end auto section
-    // ===== auto sub-section crumb: '/master-data/users'
-    const subPath = segs.length >= 2 ? `/${segs[0]}/${segs[1]}` : null;
-    const hasSubInMatched = subPath
+
+    // auto sub-section (/library/13055)
+    const subPath =
+      segs.length >= 2 ? `/${segs[0]}/${segs[1]}` : null;
+    const hasSub = subPath
       ? matched.some((r) => r.path === subPath)
       : false;
 
-    if (subPath && !hasSubInMatched) {
+    if (subPath && !hasSub) {
       out.push({
         label: humanize(segs[1]),
         to: subPath,
-        icon: lookupIcon(subPath),
       });
     }
-    // ===== end auto sub-section
-    // crumbs dari matched
+
+    // matched records
     matched.forEach((rec, idx) => {
       const isLast = idx === matched.length - 1;
       const label = labelFromRecord(rec, route);
-
-      // icon dari meta atau map default
-      const meta: any = rec.meta || {};
-      const metaIcon =
-        typeof meta.breadcrumbIcon === "function"
-          ? meta.breadcrumbIcon(route)
-          : meta.breadcrumbIcon ||
-            (typeof meta.icon === "function" ? meta.icon(route) : meta.icon);
-      const icon = metaIcon || lookupIcon(rec.path || String(rec.name ?? ""));
 
       let to: string | undefined;
       if (!isLast || opts?.trailingLink) {
         try {
           to = rec.name
-            ? router.resolve({name: rec.name as any, params: route.params}).href
-            : router.resolve({path: rec.path}).href;
+            ? router.resolve({
+                name: rec.name as any,
+                params: route.params,
+              }).href
+            : router.resolve({ path: rec.path }).href;
         } catch {
           /* ignore */
         }
       }
-      out.push({label, to, icon});
+
+      out.push({ label, to });
     });
 
     return out;
   });
 
-  return {items};
+  return { items };
 }
