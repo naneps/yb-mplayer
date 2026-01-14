@@ -64,12 +64,7 @@ const colors = [
 const neutrals = ["slate", "gray", "zinc", "neutral", "stone"];
 
 const items = computed<DropdownMenuItem[][]>(() => [
-  [{type: "label", label: menuUser.value.name, avatar: menuUser.value.avatar}],
-  [
-    {label: "Profile", icon: "i-lucide-user"},
-    {label: "Billing", icon: "i-lucide-credit-card"},
-    {label: "Settings", icon: "i-lucide-settings", to: "/settings"},
-  ],
+  
   [
     {
       label: "Theme",
@@ -143,28 +138,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
       ],
     },
   ],
-  [
-    {
-      label: "Documentation",
-      icon: "i-lucide-book-open",
-      to: "https://ui.nuxt.com/docs/getting-started/installation/nuxt",
-      target: "_blank",
-    },
-    {
-      label: "GitHub repository",
-      icon: "i-simple-icons-github",
-      to: "https://github.com/nuxt-ui-templates/dashboard",
-      target: "_blank",
-    },
-    {
-      label: "Log out",
-      icon: "i-lucide-log-out",
-      onSelect: (e: Event) => {
-        e.preventDefault();
-        showConfirm.value = true;
-      },
-    },
-  ],
+ 
 ]);
 async function onConfirmLogout() {
   pending.value = true;
@@ -180,15 +154,7 @@ async function onConfirmLogout() {
 </script>
 
 <template>
-  <UiConfirmModal
-    v-model:open="showConfirm"
-    title="Keluar akun?"
-    subtitle="Anda akan keluar dari sesi saat ini."
-    variant="warning"
-    @confirm="onConfirmLogout"
-    confirm-label="Keluar"
-    cancel-label="Batal"
-    :loading="pending" />
+
   <UDropdownMenu
     :items="items"
     :content="{align: 'center', collisionPadding: 12}"
@@ -208,16 +174,6 @@ async function onConfirmLogout() {
       class="data-[state=open]:bg-elevated"
       :ui="{trailingIcon: 'text-dimmed'}" />
 
-    <!-- chip dot color preview -->
-    <template #chip-leading="{item}">
-      <div class="inline-flex items-center justify-center shrink-0 size-5">
-        <span
-          class="rounded-full ring ring-bg bg-(--chip-light) dark:bg-(--chip-dark) size-2"
-          :style="{
-            '--chip-light': `var(--color-${(item as any).chip}-500)`,
-            '--chip-dark': `var(--color-${(item as any).chip}-400)`,
-          }" />
-      </div>
-    </template>
+  
   </UDropdownMenu>
 </template>

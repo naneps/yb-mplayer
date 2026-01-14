@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {storeToRefs} from "pinia";
-import {useEmbyApi} from "~/composables/useEmbyApi";
-import {useEmbyStore} from "~/stores/emby/emby.store";
+import { storeToRefs } from "pinia";
+import { useEmbyApi } from "~/composables/useEmbyApi";
+import { useEmbyStore } from "~/stores/emby/emby.store";
 
 // ===============================
 // STORE
@@ -96,7 +96,7 @@ const libraryThumb = (id: string) => {
             :src="libraryThumb(lib.Id)"
             :alt="lib.Name"
             class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
-            @error="$event.target.style.display = 'none'" />
+            @error="$event.target.style.display  = 'none'" />
 
           <!-- FALLBACK ICON -->
           <div class="absolute inset-0 flex items-center justify-center">
