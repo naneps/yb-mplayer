@@ -1,4 +1,6 @@
-export default defineNuxtRouteMiddleware(() => {
-  // sementara kosong
-  // nanti baru kita isi kalau mau login
+export default defineNuxtRouteMiddleware((to) => {
+  // kalau akses root "/"
+  if (to.path === '/') {
+    return navigateTo('/library')
+  }
 })

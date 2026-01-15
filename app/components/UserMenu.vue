@@ -154,7 +154,15 @@ async function onConfirmLogout() {
 </script>
 
 <template>
-
+  <UiConfirmModal
+    v-model:open="showConfirm"
+    title="Keluar akun?"
+    subtitle="Anda akan keluar dari sesi saat ini."
+    variant="warning"
+    @confirm="onConfirmLogout"
+    confirm-label="Keluar"
+    cancel-label="Batal"
+    :loading="pending" />
   <UDropdownMenu
     :items="items"
     :content="{align: 'center', collisionPadding: 12}"
@@ -163,8 +171,6 @@ async function onConfirmLogout() {
     }">
     <UButton
       v-bind="{
-        ...menuUser,
-        label: collapsed ? undefined : menuUser.name,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down',
       }"
       color="neutral"
@@ -174,6 +180,16 @@ async function onConfirmLogout() {
       class="data-[state=open]:bg-elevated"
       :ui="{trailingIcon: 'text-dimmed'}" />
 
-  
+    <!-- chip dot color preview -->
+    <template #chip-leading="{item}">
+      <div class="inline-flex items-center justify-center shrink-0 size-5">
+        <span
+          class="rounded-full ring ring-bg bg-(--chip-light) dark:bg-(--chip-dark) size-2"
+          :style="{
+            '--chip-light': `var(--color-${(item as any).chip}-500)`,
+            '--chip-dark': `var(--color-${(item as any).chip}-400)`,
+          }" />
+      </div>
+    </template>
   </UDropdownMenu>
 </template>

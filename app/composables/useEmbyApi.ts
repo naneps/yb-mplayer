@@ -48,7 +48,7 @@ export const useEmbyApi = () => {
         query: {
           ParentId: libraryId,
           IncludeItemTypes: "Videos",
-          Recursive: true,
+          Recursive: false,
           ...(search ? {SearchTerm: search} : {}),
         },
       });
@@ -64,8 +64,6 @@ export const useEmbyApi = () => {
     streamUrl(videoId: string) {
       return `${baseUrl}/Videos/${videoId}/stream?api_key=${apiKey}&Static=true`;
     },
-    getItem(id: string) {
-      return request<EmbyVideo>(`${baseUrl}/Items/${id}`, { headers })
-    }
+    
   };
 };
